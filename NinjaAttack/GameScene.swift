@@ -133,7 +133,7 @@ class GameScene: SKScene {
     addChild(monster)
     
     // Determine speed of the monster
-    let actualDuration = random(min: CGFloat(3.0), max: CGFloat(5.0))
+    let actualDuration = random(min: CGFloat(6.0), max: CGFloat(10.0))
     
     // Create the actions
     let actionMove = SKAction.move(to: CGPoint(x: -monster.size.width/2, y: actualY),
