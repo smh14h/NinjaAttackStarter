@@ -70,8 +70,12 @@ extension CGPoint {
 class GameScene: SKScene {
   
   // 1
-  let player = SKSpriteNode(imageNamed: "player")
+  let player = SKSpriteNode(imageNamed: "NewPlayer")
   var monstersDestroyed = 0
+  var lives = 3
+  
+  let lbl = UILabel(frame: CGRect(x: 10, y: 40, width: 230, height: 21))
+  let life = UILabel(frame: CGRect(x: 10, y: 20, width: 230, height: 21))
   
   override func didMove(to view: SKView) {
     // 2
@@ -95,6 +99,14 @@ class GameScene: SKScene {
     let backgroundMusic = SKAudioNode(fileNamed: "background-music-aac.caf")
     backgroundMusic.autoplayLooped = true
     addChild(backgroundMusic)
+    
+    lbl.text = "Zombies Defeated: 0"
+    lbl.textColor = .black
+    self.view?.addSubview(lbl)
+    
+    life.text = "Lives: " + String(lives)
+    life.textColor = .black
+    self.view?.addSubview(life)
   }
   
   func random() -> CGFloat {
@@ -108,7 +120,7 @@ class GameScene: SKScene {
   func addMonster() {
     
     // Create sprite
-    let monster = SKSpriteNode(imageNamed: "monster")
+    let monster = SKSpriteNode(imageNamed: "NewEnemy")
     
     // Determine where to spawn the monster along the Y axis
     let actualY = random(min: monster.size.height/2, max: size.height - monster.size.height/2)
@@ -121,7 +133,7 @@ class GameScene: SKScene {
     addChild(monster)
     
     // Determine speed of the monster
-    let actualDuration = random(min: CGFloat(2.0), max: CGFloat(4.0))
+    let actualDuration = random(min: CGFloat(3.0), max: CGFloat(5.0))
     
     // Create the actions
     let actionMove = SKAction.move(to: CGPoint(x: -monster.size.width/2, y: actualY),
@@ -129,9 +141,15 @@ class GameScene: SKScene {
     let actionMoveDone = SKAction.removeFromParent()
     let loseAction = SKAction.run() { [weak self] in
       guard let `self` = self else { return }
+      
+      if (self.lives > 1) {
+        self.lives -= 1
+        self.life.text = "Lives: " + String(self.lives)
+      } else {
       let reveal = SKTransition.flipHorizontal(withDuration: 0.5)
       let gameOverScene = GameOverScene(size: self.size, won: false)
       self.view?.presentScene(gameOverScene, transition: reveal)
+      }
     }
     monster.run(SKAction.sequence([actionMove, loseAction, actionMoveDone]))
     
@@ -153,7 +171,7 @@ class GameScene: SKScene {
     let touchLocation = touch.location(in: self)
     
     // 2 - Set up initial location of projectile
-    let projectile = SKSpriteNode(imageNamed: "projectile")
+    let projectile = SKSpriteNode(imageNamed: "NewProjectile")
     projectile.position = player.position
     
     projectile.physicsBody = SKPhysicsBody(circleOfRadius: projectile.size.width/2)
@@ -188,11 +206,13 @@ class GameScene: SKScene {
   }
   
   func projectileDidCollideWithMonster(projectile: SKSpriteNode, monster: SKSpriteNode) {
+    
     print("Hit")
     projectile.removeFromParent()
     monster.removeFromParent()
     
     monstersDestroyed += 1
+    lbl.text = "Zombies Defeated: " + String(monstersDestroyed)
     if monstersDestroyed > 30 {
       let reveal = SKTransition.flipHorizontal(withDuration: 0.5)
       let gameOverScene = GameOverScene(size: self.size, won: true)
